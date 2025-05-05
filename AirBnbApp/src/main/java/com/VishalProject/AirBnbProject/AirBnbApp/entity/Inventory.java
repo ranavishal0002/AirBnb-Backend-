@@ -21,11 +21,11 @@ public class Inventory {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "hotel_id", nullable = false)
+    @JoinColumn(name = "hotel_id", nullable = false)
     private Hotel hotel;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "room_id", nullable = false)
+    @JoinColumn(name = "room_id", nullable = false)
     private Room room;
 
     @Column(nullable = false)
