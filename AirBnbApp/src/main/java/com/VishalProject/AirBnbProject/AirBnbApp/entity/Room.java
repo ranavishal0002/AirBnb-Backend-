@@ -20,7 +20,7 @@ public class Room {
     private Long id;
 
     // this is to connect room with hotels
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hotel_id", nullable = false)
     private Hotel hotel;
 
