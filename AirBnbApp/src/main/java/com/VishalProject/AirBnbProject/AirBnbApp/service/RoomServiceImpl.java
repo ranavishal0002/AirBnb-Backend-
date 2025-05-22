@@ -49,11 +49,24 @@ public class RoomServiceImpl implements  RoomService{
 
     @Override
     public RoomDto getRoomById(Long roomId) {
-        return null;
+        log.info("Getting room with ID:{}", roomId);
+        Room room = roomRepository
+                .findById(roomId)
+                .orElseThrow(()-> new ResourceNotFoundException("Room Not Found with id: "+roomId));
+
+        return modelMapper.map(room, RoomDto.class);
     }
 
     @Override
     public void deleteRoomById(Long roomId) {
+        log.info("Delete Room with ID: {} "+ roomId);
+        boolean exists= roomRepository.existsById(roomId);
+        if(!exists){
+            throw new ResourceNotFoundException("Delete Room with ID: {}"+ roomId);
+        }
+        roomRepository.deleteById(roomId);
+
+        // TODO Delete all the inventory for this room
 
     }
 }
