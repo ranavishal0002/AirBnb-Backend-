@@ -3,9 +3,11 @@ package com.VishalProject.AirBnbProject.AirBnbApp.service;
 
 import com.VishalProject.AirBnbProject.AirBnbApp.dto.HotelDto;
 import com.VishalProject.AirBnbProject.AirBnbApp.entity.Hotel;
+import com.VishalProject.AirBnbProject.AirBnbApp.entity.Room;
 import com.VishalProject.AirBnbProject.AirBnbApp.exception.ResourceNotFoundException;
 import com.VishalProject.AirBnbProject.AirBnbApp.repository.HotelRepository;
 import jakarta.persistence.Id;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 public class HotelServiceImpl implements HotelService{
 
     private final HotelRepository hotelRepository;
+    private final InventoryService inventoryService;
     private final ModelMapper modelMapper;
 
     @Override
@@ -51,18 +54,30 @@ public class HotelServiceImpl implements HotelService{
     }
 
     @Override
+    @Transactional
     public void deleteHotelById(Long id) {
-        boolean exists = hotelRepository.existsById(id);
-        if(!exists) throw new ResourceNotFoundException("Hotel not found with Id: "+ id);
+        Hotel hotel = hotelRepository
+                .findById(id)
+                        .orElseThrow(()-> new ResourceNotFoundException("Hotel not found with ID; "+ id));
         hotelRepository.deleteById(id);
+        for(Room room : hotel.getRooms()){
+            inventoryService.deleteFutureInventories(room);
+        }
+
+
     }
 
     @Override
+    @Transactional
     public void activeHotel(Long hoteId) {
         log.info("Activating the  Hotel with ID: {}", hoteId);
         Hotel hotel = hotelRepository.findById(hoteId)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel Not Found with id: " + hoteId));
         hotel.setActive(true);
         //TODO create inventory for all the room for this hotel
+        for(Room room : hotel.getRooms()){
+            inventoryService.initializeRoomForAYear(room);
+        }
+
     }
 }
